@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { FiPlus } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 import StoryViewer from "./StoryViewer.jsx";
 
 const StoryBar = () => {
@@ -48,7 +49,7 @@ const StoryBar = () => {
         >
           <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-primary-500 to-pink-500">
             <img
-              src={g.author.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${g.author.name}`}
+              src={g.author.profilePicture ? getMediaUrl(g.author.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${g.author.name}`}
               className="w-full h-full rounded-full object-cover border-2 border-white"
               alt=""
             />

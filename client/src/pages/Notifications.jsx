@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 
 const typeText = {
   like: "liked your post",
@@ -40,7 +41,7 @@ const Notifications = () => {
           }`}
         >
           <img
-            src={n.sender.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${n.sender.name}`}
+            src={n.sender.profilePicture ? getMediaUrl(n.sender.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${n.sender.name}`}
             className="w-10 h-10 rounded-full object-cover"
             alt=""
           />

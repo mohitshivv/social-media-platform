@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FiImage, FiVideo, FiX } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 
 const CreatePost = ({ onCreated }) => {
   const { user } = useAuth();
@@ -46,7 +47,7 @@ const CreatePost = ({ onCreated }) => {
       <form onSubmit={submit}>
         <div className="flex items-start gap-3">
           <img
-            src={user.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`}
+            src={user.profilePicture ? getMediaUrl(user.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`}
             className="w-10 h-10 rounded-full object-cover"
             alt=""
           />

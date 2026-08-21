@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 
 const FriendRequestCard = ({ request, onAction }) => {
   const respond = async (action) => {
@@ -11,7 +12,7 @@ const FriendRequestCard = ({ request, onAction }) => {
     <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200 mb-2">
       <Link to={`/profile/${request.sender.username}`} className="flex items-center gap-3">
         <img
-          src={request.sender.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${request.sender.name}`}
+          src={request.sender.profilePicture ? getMediaUrl(request.sender.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${request.sender.name}`}
           className="w-10 h-10 rounded-full object-cover"
           alt=""
         />

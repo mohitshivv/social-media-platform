@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { FiThumbsUp, FiMessageCircle, FiTrash2, FiEdit2 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 import CommentSection from "./CommentSection.jsx";
 
 const PostCard = ({ post, onUpdate, onDelete }) => {
@@ -36,7 +37,7 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <img
-            src={post.author.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${post.author.name}`}
+            src={post.author.profilePicture ? getMediaUrl(post.author.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${post.author.name}`}
             className="w-10 h-10 rounded-full object-cover"
             alt=""
           />
@@ -79,9 +80,9 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
         <div className={`grid gap-1 mb-3 rounded-lg overflow-hidden ${post.media.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
           {post.media.map((m, i) =>
             m.type === "video" ? (
-              <video key={i} src={m.url} controls className="w-full max-h-96 object-cover bg-black" />
+              <video key={i} src={getMediaUrl(m.url)} controls className="w-full max-h-96 object-cover bg-black" />
             ) : (
-              <img key={i} src={m.url} className="w-full max-h-96 object-cover" alt="" />
+              <img key={i} src={getMediaUrl(m.url)} className="w-full max-h-96 object-cover" alt="" />
             )
           )}
         </div>

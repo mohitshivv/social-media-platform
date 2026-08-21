@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 
 const Search = () => {
   const [params] = useSearchParams();
@@ -22,7 +23,7 @@ const Search = () => {
           className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-200 mb-2"
         >
           <img
-            src={u.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`}
+            src={u.profilePicture ? getMediaUrl(u.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`}
             className="w-10 h-10 rounded-full object-cover"
             alt=""
           />

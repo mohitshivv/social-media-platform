@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 
 const StoryViewer = ({ group, onClose }) => {
   const [index, setIndex] = useState(0);
@@ -50,10 +51,10 @@ const StoryViewer = ({ group, onClose }) => {
         style={{ backgroundColor: story.backgroundColor || "#1877f2" }}
       >
         {story.mediaType === "video" && (
-          <video src={story.mediaUrl} autoPlay className="max-h-full max-w-full" />
+          <video src={getMediaUrl(story.mediaUrl)} autoPlay className="max-h-full max-w-full" />
         )}
         {story.mediaType === "image" && (
-          <img src={story.mediaUrl} className="max-h-full max-w-full object-contain" alt="" />
+          <img src={getMediaUrl(story.mediaUrl)} className="max-h-full max-w-full object-contain" alt="" />
         )}
         {story.mediaType === "text" && (
           <p className="text-white text-2xl font-semibold text-center p-8">{story.text}</p>

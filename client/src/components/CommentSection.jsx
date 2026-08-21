@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { FiTrash2 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 
 const CommentSection = ({ post, onUpdate }) => {
   const { user } = useAuth();
@@ -31,7 +32,7 @@ const CommentSection = ({ post, onUpdate }) => {
       {comments.map((c) => (
         <div key={c._id} className="flex items-start gap-2 mb-2">
           <img
-            src={c.author?.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${c.author?.name}`}
+            src={c.author?.profilePicture ? getMediaUrl(c.author.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${c.author?.name}`}
             className="w-7 h-7 rounded-full object-cover"
             alt=""
           />
@@ -49,7 +50,7 @@ const CommentSection = ({ post, onUpdate }) => {
 
       <form onSubmit={submitComment} className="flex items-center gap-2 mt-2">
         <img
-          src={user.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`}
+          src={user.profilePicture ? getMediaUrl(user.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`}
           className="w-7 h-7 rounded-full object-cover"
           alt=""
         />

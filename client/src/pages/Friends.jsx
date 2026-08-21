@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 import FriendRequestCard from "../components/FriendRequestCard.jsx";
 
 const Friends = () => {
@@ -34,7 +35,7 @@ const Friends = () => {
           {sent.map((r) => (
             <div key={r._id} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-200 mb-2">
               <img
-                src={r.recipient.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${r.recipient.name}`}
+                src={r.recipient.profilePicture ? getMediaUrl(r.recipient.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${r.recipient.name}`}
                 className="w-10 h-10 rounded-full object-cover"
                 alt=""
               />

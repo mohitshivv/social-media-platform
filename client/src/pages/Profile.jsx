@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { FiCamera, FiMapPin, FiLink } from "react-icons/fi";
 import api from "../api/axios.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 import PostCard from "../components/PostCard.jsx";
 
 const Profile = () => {
@@ -64,7 +65,7 @@ const Profile = () => {
     <div className="max-w-2xl mx-auto pb-10">
       <div className="relative">
         <div className="h-48 bg-gradient-to-r from-primary-500 to-blue-300 rounded-b-xl overflow-hidden">
-          {profile.coverPhoto && <img src={profile.coverPhoto} className="w-full h-full object-cover" alt="" />}
+          {profile.coverPhoto && <img src={getMediaUrl(profile.coverPhoto)} className="w-full h-full object-cover" alt="" />}
         </div>
         {isOwnProfile && (
           <label className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow cursor-pointer">
@@ -76,7 +77,7 @@ const Profile = () => {
         <div className="absolute -bottom-12 left-6">
           <div className="relative">
             <img
-              src={profile.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}`}
+              src={profile.profilePicture ? getMediaUrl(profile.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}`}
               className="w-24 h-24 rounded-full border-4 border-white object-cover"
               alt=""
             />
@@ -168,7 +169,7 @@ const Profile = () => {
               {profile.friends.map((f) => (
                 <a key={f._id} href={`/profile/${f.username}`} className="text-center">
                   <img
-                    src={f.profilePicture || `https://api.dicebear.com/7.x/initials/svg?seed=${f.name}`}
+                    src={f.profilePicture ? getMediaUrl(f.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${f.name}`}
                     className="w-16 h-16 rounded-lg object-cover mx-auto"
                     alt=""
                   />

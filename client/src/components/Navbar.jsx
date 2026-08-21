@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { FiHome, FiBell, FiUsers, FiLogOut, FiSearch } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios.js";
+import { getMediaUrl } from "../utils/mediaUrl.js";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -53,7 +54,7 @@ const Navbar = () => {
         </Link>
         <Link to={`/profile/${user.username}`}>
           <img
-            src={user.profilePicture ? user.profilePicture : "https://api.dicebear.com/7.x/initials/svg?seed=" + user.name}
+            src={user.profilePicture ? getMediaUrl(user.profilePicture) : "https://api.dicebear.com/7.x/initials/svg?seed=" + user.name}
             alt="profile"
             className="w-8 h-8 rounded-full object-cover border border-gray-300"
           />
