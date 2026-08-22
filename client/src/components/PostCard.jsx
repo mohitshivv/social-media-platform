@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { FiThumbsUp, FiMessageCircle, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiThumbsUp, FiMessageCircle, FiTrash2, FiEdit2, FiX } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios.js";
 import { getMediaUrl } from "../utils/mediaUrl.js";
 import CommentSection from "./CommentSection.jsx";
+import LikesModal from "./LikesModal.jsx";
 
 const PostCard = ({ post, onUpdate, onDelete }) => {
   const { user } = useAuth();
   const [showComments, setShowComments] = useState(false);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(post.text);
+  const [showLikes, setShowLikes] = useState(false);
 
   const isOwner = post.author._id === user._id;
   const liked = post.likes.includes(user._id);
@@ -30,6 +32,12 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
     if (!confirm("Delete this post?")) return;
     await api.delete(`/posts/${post._id}`);
     onDelete(post._id);
+  };
+
+  const deleteMedia = async (mediaId) => {
+    if (!confirm("Remove this photo/video?")) return;
+    const { data } = await api.delete(`/posts/${post._id}/media/${mediaId}`);
+    onUpdate(data);
   };
 
   return (
@@ -80,18 +88,47 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
         <div className={`grid gap-1 mb-3 rounded-lg overflow-hidden ${post.media.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
           {post.media.map((m, i) =>
             m.type === "video" ? (
-              <video key={i} src={getMediaUrl(m.url)} controls className="w-full max-h-96 object-cover bg-black" />
+              <div key={m._id || i} className="relative">
+                <video src={getMediaUrl(m.url)} controls className="w-full max-h-96 object-cover bg-black" />
+                {isOwner && (
+                  <button
+                    onClick={() => deleteMedia(m._id)}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                    title="Remove video"
+                  >
+                    <FiX size={14} />
+                  </button>
+                )}
+              </div>
             ) : (
-              <img key={i} src={getMediaUrl(m.url)} className="w-full max-h-96 object-cover" alt="" />
+              <div key={m._id || i} className="relative">
+                <img src={getMediaUrl(m.url)} className="w-full max-h-96 object-cover" alt="" />
+                {isOwner && (
+                  <button
+                    onClick={() => deleteMedia(m._id)}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                    title="Remove photo"
+                  >
+                    <FiX size={14} />
+                  </button>
+                )}
+              </div>
             )
           )}
         </div>
       )}
 
       <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-2">
-        <span>{post.likes.length} likes</span>
+        <button
+          onClick={() => post.likes.length > 0 && setShowLikes(true)}
+          className={post.likes.length > 0 ? "hover:underline" : ""}
+        >
+          {post.likes.length} likes
+        </button>
         <span>{post.comments.length} comments</span>
       </div>
+
+      {showLikes && <LikesModal postId={post._id} onClose={() => setShowLikes(false)} />}
 
       <div className="flex border-t border-gray-100 mt-2 pt-2">
         <button

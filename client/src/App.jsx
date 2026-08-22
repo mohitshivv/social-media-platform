@@ -10,6 +10,7 @@ import Profile from "./pages/Profile.jsx";
 import Notifications from "./pages/Notifications.jsx";
 import Friends from "./pages/Friends.jsx";
 import Search from "./pages/Search.jsx";
+import Settings from "./pages/Settings.jsx";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       </Routes>
     </div>
   );

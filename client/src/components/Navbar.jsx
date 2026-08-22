@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FiHome, FiBell, FiUsers, FiLogOut, FiSearch } from "react-icons/fi";
+import { FiHome, FiBell, FiUsers, FiLogOut, FiSearch, FiSettings } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../api/axios.js";
 import { getMediaUrl } from "../utils/mediaUrl.js";
@@ -44,6 +44,7 @@ const Navbar = () => {
       <div className="flex items-center gap-3 sm:gap-5">
         <Link to="/" className="text-gray-600 hover:text-primary-500 text-xl"><FiHome /></Link>
         <Link to="/friends" className="text-gray-600 hover:text-primary-500 text-xl"><FiUsers /></Link>
+        <Link to="/settings" className="text-gray-600 hover:text-primary-500 text-xl" title="Settings"><FiSettings /></Link>
         <Link to="/notifications" className="relative text-gray-600 hover:text-primary-500 text-xl">
           <FiBell />
           {unread > 0 && (

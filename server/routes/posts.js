@@ -5,6 +5,9 @@ import Notification from "../models/Notification.js";
 import User from "../models/User.js";
 import { protect } from "../middleware/auth.js";
 import upload from "../middleware/upload.js";
+import { notifyMentions } from "../utils/notifyMentions.js";
+import fs from "fs";
+import path from "path";
 
 const router = express.Router();
 
@@ -23,6 +26,8 @@ router.post("/", protect, upload.array("media", 10), async (req, res) => {
 
     const post = await Post.create({ author: req.user._id, text, media });
     const populated = await post.populate("author", "name username profilePicture");
+
+    await notifyMentions({ text, authorId: req.user._id, authorName: req.user.name, post: post._id });
 
     res.status(201).json(populated);
   } catch (error) {
@@ -136,6 +141,31 @@ router.get("/:id/likes", protect, async (req, res) => {
     );
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.json(post.likes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   DELETE /api/posts/:id/media/:mediaId  (remove a single photo/video from a post)
+router.delete("/:id/media/:mediaId", protect, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (post.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to edit this post" });
+    }
+
+    const mediaItem = post.media.id(req.params.mediaId);
+    if (!mediaItem) return res.status(404).json({ message: "Media not found" });
+
+    // Remove the underlying file from disk (best-effort; ignore if already gone)
+    const filePath = path.join(process.cwd(), mediaItem.url.replace(/^\//, ""));
+    fs.unlink(filePath, () => {});
+
+    post.media.pull(req.params.mediaId);
+    await post.save();
+
+    res.json(post);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

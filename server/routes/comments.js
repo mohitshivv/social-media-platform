@@ -3,6 +3,7 @@ import Comment from "../models/Comment.js";
 import Post from "../models/Post.js";
 import Notification from "../models/Notification.js";
 import { protect } from "../middleware/auth.js";
+import { notifyMentions } from "../utils/notifyMentions.js";
 
 const router = express.Router();
 
@@ -36,6 +37,15 @@ router.post("/:postId", protect, async (req, res) => {
     }
 
     const populated = await comment.populate("author", "name username profilePicture");
+
+    await notifyMentions({
+      text,
+      authorId: req.user._id,
+      authorName: req.user.name,
+      post: post._id,
+      comment: comment._id,
+    });
+
     res.status(201).json(populated);
   } catch (error) {
     res.status(500).json({ message: error.message });
