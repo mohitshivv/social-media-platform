@@ -15,6 +15,7 @@ const Profile = () => {
   const [form, setForm] = useState({ name: "", bio: "", location: "", website: "" });
   const [rel, setRel] = useState({ status: "none" }); // none | sent | received | friends
   const [actionError, setActionError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const load = () => {
     api.get(`/users/${username}`).then((res) => {
@@ -61,23 +62,64 @@ const Profile = () => {
     if (isOwnProfile) setCurrentUser(data);
   };
 
-  const runAction = async (fn) => {
-    setActionError("");
+  // Re-read the real relationship from the server (used after errors / on load)
+  const refreshStatus = async () => {
     try {
-      await fn();
-      load(); // refresh friends list, count and relationship
-    } catch (err) {
-      setActionError(err.response?.data?.message || "Something went wrong");
+      const r = await api.get(`/friends/status/${profile._id}`);
+      setRel(r.data);
+    } catch {
+      /* keep the current state */
     }
   };
 
-  const sendFriendRequest = () => runAction(() => api.post(`/friends/request/${profile._id}`));
-  const cancelRequest = () => runAction(() => api.delete(`/friends/cancel/${rel.requestId}`));
-  const acceptRequest = () => runAction(() => api.put(`/friends/accept/${rel.requestId}`));
-  const declineRequest = () => runAction(() => api.put(`/friends/decline/${rel.requestId}`));
+  // Run a friend action. On success the button changes immediately (no waiting for a reload).
+  const runAction = async (fn, onSuccess, { reloadProfile = false } = {}) => {
+    if (busy) return;
+    setActionError("");
+    setBusy(true);
+    try {
+      const result = await fn();
+      onSuccess(result?.data);
+      if (reloadProfile) load(); // refresh the friends list and friend count
+    } catch (err) {
+      // e.g. "request already exists": the relationship changed, so just sync the button
+      await refreshStatus();
+      if (err.response?.status !== 400) {
+        setActionError(err.response?.data?.message || "Something went wrong. Please try again.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sendFriendRequest = () =>
+    runAction(
+      () => api.post(`/friends/request/${profile._id}`),
+      (data) => setRel({ status: "sent", requestId: data?._id })
+    );
+  const cancelRequest = () =>
+    runAction(
+      () => api.delete(`/friends/cancel/${rel.requestId}`),
+      () => setRel({ status: "none" })
+    );
+  const acceptRequest = () =>
+    runAction(
+      () => api.put(`/friends/accept/${rel.requestId}`),
+      () => setRel({ status: "friends" }),
+      { reloadProfile: true }
+    );
+  const declineRequest = () =>
+    runAction(
+      () => api.put(`/friends/decline/${rel.requestId}`),
+      () => setRel({ status: "none" })
+    );
   const unfriend = () => {
     if (!confirm(`Remove ${profile.name} from your friends?`)) return;
-    runAction(() => api.delete(`/friends/${profile._id}`));
+    runAction(
+      () => api.delete(`/friends/${profile._id}`),
+      () => setRel({ status: "none" }),
+      { reloadProfile: true }
+    );
   };
 
   if (!profile) return <p className="text-center mt-10 text-gray-500">Loading profile...</p>;
@@ -130,7 +172,8 @@ const Profile = () => {
               {rel.status === "none" && (
                 <button
                   onClick={sendFriendRequest}
-                  className="bg-primary-500 text-white text-sm px-4 py-1.5 rounded-lg font-medium"
+                  disabled={busy}
+                  className="bg-primary-500 text-white text-sm px-4 py-1.5 rounded-lg font-medium disabled:opacity-60"
                 >
                   Add Friend
                 </button>
@@ -138,7 +181,8 @@ const Profile = () => {
               {rel.status === "sent" && (
                 <button
                   onClick={cancelRequest}
-                  className="bg-gray-200 text-gray-800 text-sm px-4 py-1.5 rounded-lg font-medium"
+                  disabled={busy}
+                  className="bg-gray-200 text-gray-800 text-sm px-4 py-1.5 rounded-lg font-medium disabled:opacity-60"
                 >
                   Request Sent · Cancel
                 </button>
