@@ -34,6 +34,18 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded media statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Friendly page for anyone who opens the backend address directly in a browser
+app.get("/", (req, res) => {
+  res.send(`
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 80px auto; text-align: center; color: #1f2937;">
+      <h1 style="color: #1877f2;">Connectify API</h1>
+      <p>The backend is running.</p>
+      <p>This address serves the data for the app. To use Connectify, open the website.</p>
+      <p><a href="/api/health">Check API health</a></p>
+    </div>
+  `);
+});
+
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
 app.use("/api/auth", authRoutes);
