@@ -11,6 +11,7 @@ import Notifications from "./pages/Notifications.jsx";
 import Friends from "./pages/Friends.jsx";
 import Search from "./pages/Search.jsx";
 import Settings from "./pages/Settings.jsx";
+import PostPage from "./pages/PostPage.jsx";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/post/:id" element={<ProtectedRoute><PostPage /></ProtectedRoute>} />
       </Routes>
     </div>
   );

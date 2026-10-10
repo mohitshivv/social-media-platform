@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { FiCamera, FiMapPin, FiLink } from "react-icons/fi";
 import api from "../api/axios.js";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -13,7 +13,8 @@ const Profile = () => {
   const [posts, setPosts] = useState([]);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: "", bio: "", location: "", website: "" });
-  const [friendStatus, setFriendStatus] = useState(null);
+  const [rel, setRel] = useState({ status: "none" }); // none | sent | received | friends
+  const [actionError, setActionError] = useState("");
 
   const load = () => {
     api.get(`/users/${username}`).then((res) => {
@@ -25,6 +26,12 @@ const Profile = () => {
         location: res.data.user.location,
         website: res.data.user.website,
       });
+      if (res.data.user.username !== currentUser?.username) {
+        api
+          .get(`/friends/status/${res.data.user._id}`)
+          .then((r) => setRel(r.data))
+          .catch(() => setRel({ status: "none" }));
+      }
     });
   };
 
@@ -54,9 +61,23 @@ const Profile = () => {
     if (isOwnProfile) setCurrentUser(data);
   };
 
-  const sendFriendRequest = async () => {
-    await api.post(`/friends/request/${profile._id}`);
-    setFriendStatus("pending");
+  const runAction = async (fn) => {
+    setActionError("");
+    try {
+      await fn();
+      load(); // refresh friends list, count and relationship
+    } catch (err) {
+      setActionError(err.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  const sendFriendRequest = () => runAction(() => api.post(`/friends/request/${profile._id}`));
+  const cancelRequest = () => runAction(() => api.delete(`/friends/cancel/${rel.requestId}`));
+  const acceptRequest = () => runAction(() => api.put(`/friends/accept/${rel.requestId}`));
+  const declineRequest = () => runAction(() => api.put(`/friends/decline/${rel.requestId}`));
+  const unfriend = () => {
+    if (!confirm(`Remove ${profile.name} from your friends?`)) return;
+    runAction(() => api.delete(`/friends/${profile._id}`));
   };
 
   if (!profile) return <p className="text-center mt-10 text-gray-500">Loading profile...</p>;
@@ -105,15 +126,51 @@ const Profile = () => {
               Edit Profile
             </button>
           ) : (
-            <button
-              onClick={sendFriendRequest}
-              disabled={friendStatus === "pending"}
-              className="bg-primary-500 text-white text-sm px-4 py-1.5 rounded-lg font-medium disabled:opacity-50"
-            >
-              {friendStatus === "pending" ? "Request Sent" : "Add Friend"}
-            </button>
+            <div className="flex gap-2">
+              {rel.status === "none" && (
+                <button
+                  onClick={sendFriendRequest}
+                  className="bg-primary-500 text-white text-sm px-4 py-1.5 rounded-lg font-medium"
+                >
+                  Add Friend
+                </button>
+              )}
+              {rel.status === "sent" && (
+                <button
+                  onClick={cancelRequest}
+                  className="bg-gray-200 text-gray-800 text-sm px-4 py-1.5 rounded-lg font-medium"
+                >
+                  Request Sent · Cancel
+                </button>
+              )}
+              {rel.status === "received" && (
+                <>
+                  <button
+                    onClick={acceptRequest}
+                    className="bg-primary-500 text-white text-sm px-4 py-1.5 rounded-lg font-medium"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={declineRequest}
+                    className="bg-gray-200 text-gray-800 text-sm px-4 py-1.5 rounded-lg font-medium"
+                  >
+                    Decline
+                  </button>
+                </>
+              )}
+              {rel.status === "friends" && (
+                <button
+                  onClick={unfriend}
+                  className="bg-gray-200 text-gray-800 text-sm px-4 py-1.5 rounded-lg font-medium hover:bg-red-100 hover:text-red-600"
+                >
+                  Friends ✓ · Unfriend
+                </button>
+              )}
+            </div>
           )}
         </div>
+        {actionError && <p className="text-sm text-red-500 mt-2">{actionError}</p>}
 
         {editing ? (
           <div className="mt-4 space-y-2 bg-gray-50 p-4 rounded-xl">
@@ -167,14 +224,14 @@ const Profile = () => {
             <h2 className="font-semibold mb-2">Friends</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
               {profile.friends.map((f) => (
-                <a key={f._id} href={`/profile/${f.username}`} className="text-center">
+                <Link key={f._id} to={`/profile/${f.username}`} className="text-center">
                   <img
                     src={f.profilePicture ? getMediaUrl(f.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${f.name}`}
                     className="w-16 h-16 rounded-lg object-cover mx-auto"
                     alt=""
                   />
                   <p className="text-xs mt-1 truncate">{f.name}</p>
-                </a>
+                </Link>
               ))}
             </div>
           </div>

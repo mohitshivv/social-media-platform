@@ -103,4 +103,16 @@ router.put("/:id/like", protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/comments/post/:postId  (all comments of a post, with authors)
+router.get("/post/:postId", protect, async (req, res) => {
+  try {
+    const comments = await Comment.find({ post: req.params.postId })
+      .populate("author", "name username profilePicture")
+      .sort({ createdAt: 1 });
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default router;

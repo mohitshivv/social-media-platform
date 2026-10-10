@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { FiThumbsUp, FiMessageCircle, FiTrash2, FiEdit2, FiX } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -19,7 +20,7 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
 
   const toggleLike = async () => {
     const { data } = await api.put(`/posts/${post._id}/like`);
-    onUpdate(data);
+    onUpdate({ ...post, likes: data.likes });
   };
 
   const saveEdit = async () => {
@@ -37,20 +38,24 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
   const deleteMedia = async (mediaId) => {
     if (!confirm("Remove this photo/video?")) return;
     const { data } = await api.delete(`/posts/${post._id}/media/${mediaId}`);
-    onUpdate(data);
+    onUpdate({ ...post, media: data.media });
   };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <img
-            src={post.author.profilePicture ? getMediaUrl(post.author.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${post.author.name}`}
-            className="w-10 h-10 rounded-full object-cover"
-            alt=""
-          />
+          <Link to={`/profile/${post.author.username}`}>
+            <img
+              src={post.author.profilePicture ? getMediaUrl(post.author.profilePicture) : `https://api.dicebear.com/7.x/initials/svg?seed=${post.author.name}`}
+              className="w-10 h-10 rounded-full object-cover"
+              alt=""
+            />
+          </Link>
           <div>
-            <p className="font-semibold text-sm">{post.author.name}</p>
+            <Link to={`/profile/${post.author.username}`} className="font-semibold text-sm hover:underline">
+              {post.author.name}
+            </Link>
             <p className="text-xs text-gray-500">
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
             </p>

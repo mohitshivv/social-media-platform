@@ -16,6 +16,11 @@ const Friends = () => {
     load();
   }, []);
 
+  const cancelSent = async (id) => {
+    await api.delete(`/friends/cancel/${id}`);
+    setSent(sent.filter((r) => r._id !== id));
+  };
+
   return (
     <div className="max-w-lg mx-auto py-4 px-3">
       <h1 className="text-xl font-bold mb-4">Friend Requests</h1>
@@ -41,6 +46,12 @@ const Friends = () => {
               />
               <span className="text-sm font-medium">{r.recipient.name}</span>
               <span className="text-xs text-gray-400 ml-auto">Pending</span>
+              <button
+                onClick={() => cancelSent(r._id)}
+                className="bg-gray-200 text-gray-700 text-xs px-3 py-1.5 rounded-lg"
+              >
+                Cancel
+              </button>
             </div>
           ))}
         </>

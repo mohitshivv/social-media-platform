@@ -20,7 +20,10 @@ router.post("/request/:userId", protect, async (req, res) => {
         { sender: recipientId, recipient: req.user._id },
       ],
     });
-    if (existing) {
+    if (existing && existing.status === "declined") {
+      // A declined request shouldn't block the pair forever - clear it and allow a new one
+      await existing.deleteOne();
+    } else if (existing) {
       return res.status(400).json({ message: "A friend request already exists between you two" });
     }
 
@@ -124,6 +127,50 @@ router.get("/sent", protect, async (req, res) => {
       status: "pending",
     }).populate("recipient", "name username profilePicture");
     res.json(requests);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   GET /api/friends/status/:userId  (relationship between me and another user)
+router.get("/status/:userId", protect, async (req, res) => {
+  try {
+    const otherId = req.params.userId;
+    const me = await User.findById(req.user._id).select("friends");
+
+    if (me.friends.some((id) => id.toString() === otherId)) {
+      return res.json({ status: "friends" });
+    }
+
+    const pending = await FriendRequest.findOne({
+      status: "pending",
+      $or: [
+        { sender: req.user._id, recipient: otherId },
+        { sender: otherId, recipient: req.user._id },
+      ],
+    });
+
+    if (!pending) return res.json({ status: "none" });
+
+    if (pending.sender.toString() === req.user._id.toString()) {
+      return res.json({ status: "sent", requestId: pending._id });
+    }
+    return res.json({ status: "received", requestId: pending._id });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   DELETE /api/friends/cancel/:requestId  (cancel a request I sent)
+router.delete("/cancel/:requestId", protect, async (req, res) => {
+  try {
+    const request = await FriendRequest.findById(req.params.requestId);
+    if (!request) return res.status(404).json({ message: "Friend request not found" });
+    if (request.sender.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+    await request.deleteOne();
+    res.json({ message: "Friend request cancelled" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

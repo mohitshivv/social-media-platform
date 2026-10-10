@@ -12,6 +12,13 @@ const typeText = {
   mention: "mentioned you",
 };
 
+// Where each kind of notification should take the user
+const targetFor = (n) => {
+  if (n.type === "friend_request") return "/friends";
+  if (["like", "comment", "mention"].includes(n.type) && n.post?._id) return `/post/${n.post._id}`;
+  return `/profile/${n.sender.username}`;
+};
+
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
 
@@ -33,7 +40,7 @@ const Notifications = () => {
 
       {notifications.map((n) => (
         <Link
-          to={`/profile/${n.sender.username}`}
+          to={targetFor(n)}
           key={n._id}
           onClick={() => markRead(n._id)}
           className={`flex items-center gap-3 p-3 rounded-xl mb-2 border ${
@@ -49,7 +56,10 @@ const Notifications = () => {
             <p className="text-sm">
               <span className="font-semibold">{n.sender.name}</span> {typeText[n.type] || n.text}
             </p>
-            <p className="text-xs text-gray-500">
+            {n.post?.text && (
+              <p className="text-xs text-gray-500 truncate max-w-[16rem]">"{n.post.text}"</p>
+            )}
+            <p className="text-xs text-gray-400">
               {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
             </p>
           </div>

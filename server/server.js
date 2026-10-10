@@ -12,6 +12,7 @@ import commentRoutes from "./routes/comments.js";
 import notificationRoutes from "./routes/notifications.js";
 import storyRoutes from "./routes/stories.js";
 import friendRoutes from "./routes/friends.js";
+import postViewRoutes from "./routes/postView.js";
 
 dotenv.config();
 connectDB();
@@ -42,6 +43,7 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/post", postViewRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
